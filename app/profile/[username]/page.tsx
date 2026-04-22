@@ -20,33 +20,83 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
+  // ── Follow state ──────────────────────────────────────────
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followersCount, setFollowersCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [followLoading, setFollowLoading] = useState(false)
+  // ─────────────────────────────────────────────────────────
+
   useEffect(() => {
     fetchProfile()
   }, [username])
 
   const fetchProfile = async () => {
-  const res = await fetch(`/api/users?username=${username}`)
-  const data = await res.json()
+    const res = await fetch(`/api/users?username=${username}`)
+    const data = await res.json()
 
-  const found = data.users?.find((u: any) => u.username === username)
-  if (!found) { router.push('/feed'); return }
+    const found = data.users?.find((u: any) => u.username === username)
+    if (!found) { router.push('/feed'); return }
 
-  setProfile(found)
-  setEditForm({
-    first_name: found.first_name || '',
-    last_name: found.last_name || '',
-    bio: found.bio || '',
-    website: found.website || '',
-    location: found.location || '',
-    avatar_url: found.avatar_url || ''
-  })
+    setProfile(found)
+    setEditForm({
+      first_name: found.first_name || '',
+      last_name: found.last_name || '',
+      bio: found.bio || '',
+      website: found.website || '',
+      location: found.location || '',
+      avatar_url: found.avatar_url || ''
+    })
 
-  const postsRes = await fetch('/api/posts')
-  const postsData = await postsRes.json()
-  const userPosts = postsData.posts?.filter((p: any) => p.profiles?.username === username) || []
-  setPosts(userPosts)
-  setLoading(false)
-}
+    const postsRes = await fetch('/api/posts')
+    const postsData = await postsRes.json()
+    const userPosts = postsData.posts?.filter((p: any) => p.profiles?.username === username) || []
+    setPosts(userPosts)
+
+    // ── Fetch followers/following counts ──────────────────
+    const [followersRes, followingRes] = await Promise.all([
+      fetch(`/api/users/${found.id}/followers`),
+      fetch(`/api/users/${found.id}/following`)
+    ])
+    const followersData = await followersRes.json()
+    const followingData = await followingRes.json()
+
+    setFollowersCount(followersData.count || 0)
+    setFollowingCount(followingData.count || 0)
+
+    // ── FIX: use user.userId instead of user.id ──────────
+    if (user?.userId) {
+      const alreadyFollowing = followersData.followers?.some(
+        (f: any) => f.follower?.id === user.userId
+      )
+      setIsFollowing(!!alreadyFollowing)
+    }
+    // ─────────────────────────────────────────────────────
+
+    setLoading(false)
+  }
+
+  // ── Follow / Unfollow handler ─────────────────────────────
+  const handleFollowToggle = async () => {
+    if (!user) { router.push('/login'); return }
+    setFollowLoading(true)
+    try {
+      const method = isFollowing ? 'DELETE' : 'POST'
+      const res = await fetch(`/api/users/${profile?.id}/follow`, {
+        method,
+        headers: { Authorization: `Bearer ${user.token}` }
+      })
+      if (res.ok) {
+        setIsFollowing(prev => !prev)
+        setFollowersCount(prev => isFollowing ? prev - 1 : prev + 1)
+      }
+    } catch (err) {
+      console.error('Follow toggle error:', err)
+    } finally {
+      setFollowLoading(false)
+    }
+  }
+  // ─────────────────────────────────────────────────────────
 
   const handleAvatarUpload = async (file: File): Promise<string | null> => {
     const formData = new FormData()
@@ -121,17 +171,50 @@ export default function ProfilePage() {
                   {profile?.first_name} {profile?.last_name}
                 </h1>
                 <p className="text-gray-400 text-sm">@{profile?.username}</p>
-                <p className="text-gray-500 text-xs mt-1">{profile?.posts_count || 0} posts</p>
+
+                {/* ── Follower / Following counts ── */}
+                <div className="flex gap-4 mt-1">
+                  <span className="text-gray-400 text-xs">
+                    <span className="text-white font-semibold">{followersCount}</span> Followers
+                  </span>
+                  <span className="text-gray-400 text-xs">
+                    <span className="text-white font-semibold">{followingCount}</span> Following
+                  </span>
+                  <span className="text-gray-400 text-xs">
+                    <span className="text-white font-semibold">{profile?.posts_count || posts.length}</span> Posts
+                  </span>
+                </div>
+                {/* ─────────────────────────────── */}
+
               </div>
             </div>
-            {isOwnProfile && !editing && (
-              <button
-                onClick={() => setEditing(true)}
-                className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl transition"
-              >
-                Edit Profile
-              </button>
-            )}
+
+            {/* ── Edit button (own) OR Follow button (others) ── */}
+            <div className="flex flex-col items-end gap-2">
+              {isOwnProfile && !editing && (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl transition"
+                >
+                  Edit Profile
+                </button>
+              )}
+              {!isOwnProfile && (
+                <button
+                  onClick={handleFollowToggle}
+                  disabled={followLoading}
+                  className={`text-sm px-5 py-2 rounded-xl font-semibold transition-all disabled:opacity-50 ${
+                    isFollowing
+                      ? 'bg-gray-700 hover:bg-red-900 hover:text-red-400 text-white border border-gray-600'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  {followLoading ? '...' : isFollowing ? 'Unfollow' : 'Follow'}
+                </button>
+              )}
+            </div>
+            {/* ─────────────────────────────────────────────── */}
+
           </div>
 
           {!editing ? (
