@@ -29,38 +29,44 @@ A full-stack social media web application built with Next.js, Supabase, and Tail
 | UI Components | shadcn/ui |
 
 ## Project Structure
+
+```
 socialconnect/
 ├── app/
 │   ├── api/
 │   │   ├── auth/
-│   │   │   ├── register/     # POST - User registration
-│   │   │   ├── login/        # POST - User login
-│   │   │   └── logout/       # POST - User logout
+│   │   │   ├── register/route.ts
+│   │   │   ├── login/route.ts
+│   │   │   └── logout/route.ts
 │   │   ├── posts/
-│   │   │   ├── route.ts      # GET all posts, POST create post
+│   │   │   ├── route.ts
 │   │   │   └── [post_id]/
-│   │   │       ├── route.ts          # GET, PATCH, DELETE post
-│   │   │       ├── like/route.ts     # POST like, DELETE unlike
-│   │   │       └── comments/route.ts # GET, POST comments
+│   │   │       ├── route.ts
+│   │   │       ├── like/route.ts
+│   │   │       └── comments/route.ts
 │   │   ├── users/
-│   │   │   ├── route.ts       # GET all users
-│   │   │   ├── me/route.ts    # GET, PATCH own profile
-│   │   │   └── [user_id]/     # GET user by ID
-│   │   ├── feed/route.ts      # GET chronological feed
-│   │   ├── upload/route.ts    # POST upload post image
-│   │   └── avatar/route.ts    # POST upload avatar
-│   ├── feed/                  # Feed page
-│   ├── login/                 # Login page
-│   ├── register/              # Register page
-│   └── profile/[username]/    # Profile page
+│   │   │   ├── route.ts
+│   │   │   ├── me/route.ts
+│   │   │   └── [user_id]/route.ts
+│   │   ├── feed/route.ts
+│   │   ├── upload/route.ts
+│   │   └── avatar/route.ts
+│   ├── feed/page.tsx
+│   ├── login/page.tsx
+│   ├── register/page.tsx
+│   └── profile/[username]/page.tsx
 ├── components/
-│   ├── Navbar.tsx             # Navigation bar
-│   └── PostCard.tsx           # Post card with likes and comments
+│   ├── Navbar.tsx
+│   └── PostCard.tsx
 ├── lib/
-│   ├── supabase.ts            # Supabase client
-│   ├── auth.ts                # JWT helpers
-│   ├── upload.ts              # Image upload helper
-│   └── context.tsx            # Auth context provider
+│   ├── supabase.ts
+│   ├── auth.ts
+│   ├── upload.ts
+│   └── context.tsx
+├── .env.local (not committed)
+├── .gitignore
+└── README.md
+```
 
 ## Database Schema
 
