@@ -1,7 +1,8 @@
 # SocialConnect
 
 A full-stack social media web application built with Next.js, Supabase, and Tailwind CSS. Users can register, create profiles, share posts, like and comment on content, and discover others through a personalized feed.
-
+## Deployment on Vercel
+https://socialconnect-lilac.vercel.app/register
 ## Live Demo
 
 >(https://www.loom.com/share/3ad8275c889543608dd06fc63e6c3a75)
