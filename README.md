@@ -4,7 +4,7 @@ A full-stack social media web application built with Next.js, Supabase, and Tail
 
 ## Live Demo
 
-> Add your deployed URL here after deployment
+>(https://www.loom.com/share/3ad8275c889543608dd06fc63e6c3a75)
 
 ## Features
 
